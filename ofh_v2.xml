@@ -6,7 +6,6 @@ REVISION: 1.00
 LICENSE: CERN OHL v.1.1 or later, see http://ohwr.org/cernohl
 Copyright (C) 2014 Elphel, Inc. 
 -->
-
 <Document>
 	<element>
 		<distance>0</distance>
@@ -15,7 +14,7 @@ Copyright (C) 2014 Elphel, Inc.
 		<name></name>
 		<front>
 			<height>19</height>
-			<rcurve>44.1995256672</rcurve>
+			<rcurve>44.199525667178</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -24,7 +23,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>19</height>
-			<rcurve>246.6876684899</rcurve>
+			<rcurve>246.68766848992</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -33,13 +32,13 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>2.5000001103</distance>
-		<thickness>0.9798916508</thickness>
+		<distance>2.5000001103036</distance>
+		<thickness>0.9798916508493</thickness>
 		<material>SK16</material>
 		<name></name>
 		<front>
 			<height>13.2</height>
-			<rcurve>28.7407314472</rcurve>
+			<rcurve>28.740731447233</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -48,7 +47,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>8.4</height>
-			<rcurve>4.6429368608</rcurve>
+			<rcurve>4.6429368607625</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -57,13 +56,13 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>5.523528887</distance>
-		<thickness>2.5000747341</thickness>
+		<distance>5.5235288869549</distance>
+		<thickness>2.500074734125</thickness>
 		<material>BAF51</material>
 		<name></name>
 		<front>
 			<height>9.2</height>
-			<rcurve>10.1726461944</rcurve>
+			<rcurve>10.172646194398</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -72,7 +71,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>6.4</height>
-			<rcurve>4.6194936713</rcurve>
+			<rcurve>4.6194936713085</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -81,13 +80,13 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>10.0236036211</distance>
-		<thickness>2.5344684091</thickness>
+		<distance>10.02360362108</distance>
+		<thickness>2.53446840913</thickness>
 		<material>SF57</material>
 		<name></name>
 		<front>
 			<height>9</height>
-			<rcurve>14.5286371088</rcurve>
+			<rcurve>14.528637108847</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -96,7 +95,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>9</height>
-			<rcurve>-20.3628934583</rcurve>
+			<rcurve>-20.362893458295</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -105,23 +104,23 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>12.9906694879</distance>
+		<distance>12.990669487873</distance>
 		<thickness></thickness>
 		<material></material>
 		<name>aperture stop</name>
 		<front>
-			<height>-2.0802795223</height>
+			<height>-4.160561982644</height>
 			<rcurve></rcurve>
-			<k>NaN</k>
+			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
 			<a3>0</a3>
 			<a4>0</a4>
 		</front>
 		<back>
-			<height>NaN</height>
+			<height>0</height>
 			<rcurve></rcurve>
-			<k>NaN</k>
+			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
 			<a3>0</a3>
@@ -129,13 +128,13 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>14.2945748147</distance>
+		<distance>14.294574814691</distance>
 		<thickness>1.5</thickness>
 		<material>SF58</material>
 		<name></name>
 		<front>
 			<height>7.4</height>
-			<rcurve>-30.5356011642</rcurve>
+			<rcurve>-30.53560116424</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -144,7 +143,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>7.4</height>
-			<rcurve>8.9309914413</rcurve>
+			<rcurve>8.9309914413009</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -153,13 +152,13 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>15.7945748147</distance>
-		<thickness>1.9557993329</thickness>
+		<distance>15.794574814691</distance>
+		<thickness>1.955799332857</thickness>
 		<material>N-SK15</material>
 		<name></name>
 		<front>
 			<height>7.4</height>
-			<rcurve>8.9309914413</rcurve>
+			<rcurve>8.9309914413009</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -168,7 +167,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>7.4</height>
-			<rcurve>-7.4851654525</rcurve>
+			<rcurve>-7.4851654524717</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -177,13 +176,13 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>18.2605400091</distance>
+		<distance>18.260540009135</distance>
 		<thickness>1.5</thickness>
 		<material>N-FK51A</material>
 		<name></name>
 		<front>
 			<height>9</height>
-			<rcurve>24.7891335236</rcurve>
+			<rcurve>24.789133523564</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -192,7 +191,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>9</height>
-			<rcurve>-12.6157169321</rcurve>
+			<rcurve>-12.61571693206</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -201,13 +200,13 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>20.4723519148</distance>
-		<thickness>2.0521328555</thickness>
+		<distance>20.472351914756</distance>
+		<thickness>2.052132855473</thickness>
 		<material>N-FK51</material>
 		<name></name>
 		<front>
 			<height>9</height>
-			<rcurve>11.3993328019</rcurve>
+			<rcurve>11.399332801875</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -216,7 +215,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>9</height>
-			<rcurve>-31.8291341955</rcurve>
+			<rcurve>-31.829134195541</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -225,7 +224,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>28.2244847702</distance>
+		<distance>28.224484770229</distance>
 		<thickness>0.5</thickness>
 		<material>N-BK7</material>
 		<name>field flattener</name>
@@ -240,7 +239,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>9</height>
-			<rcurve>-10000</rcurve>
+			<rcurve>1000000</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -249,13 +248,13 @@ Copyright (C) 2014 Elphel, Inc.
 		</back>
 	</element>
 	<element>
-		<distance>28.7244847702</distance>
+		<distance>28.724484770229</distance>
 		<thickness>0.4</thickness>
 		<material>N-BK7</material>
 		<name>sensor glass</name>
 		<front>
 			<height>8</height>
-			<rcurve>10000</rcurve>
+			<rcurve>1000000</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
@@ -264,7 +263,7 @@ Copyright (C) 2014 Elphel, Inc.
 		</front>
 		<back>
 			<height>8</height>
-			<rcurve>-10000</rcurve>
+			<rcurve>1000000</rcurve>
 			<k>0</k>
 			<a1>0</a1>
 			<a2>0</a2>
