@@ -1,7 +1,7 @@
 /*
 *! FILE NAME   : set elphel operands
 *! DESCRIPTION : sets user defined operands in OSLO
-*! REVISION    : 1.00
+*! REVISION    : 1.1
 *! AUTHOR      : Oleg Dzhimiev <oleg@elphel.com>
 *! Copyright (C) 2014 Elphel, Inc
 *! -----------------------------------------------------------------------------**
@@ -57,10 +57,10 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
   double lat_shift_s[6];
   double psf_s2[6];
   double psf_t2[6];
-  
+    
   double FoV = 38;//degrees
     
-  //NOT DEGREES OR RADIANS
+  //NOT DEGREES OR RADIANS - FRACTION of defined in GUI field angle
   double ray_angle[6];
   ray_angle[0]=0.0000;
   ray_angle[1]=0.3600;
@@ -81,7 +81,8 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
   number_of_steps = floor(ccl_maximum_frequency/deltaf)+1;
   
   
-  double scale_tmp=0;
+  //double scale_tmp=0;
+  double scale_tmp;
   int NBR_STEPS=2;
   
   if (debug==1) print("S");
@@ -97,12 +98,18 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
       mod_trans_func(tfr, mon, wvn, x, ccl_maximum_frequency, deltaf, 0.0);
       mtf50_freq = find_mtf50_freq(deltaf,number_of_steps,ref_mtf);
       psf_s[i] = psf_conversion_coeff/mtf50_freq;//got psf50 in mm's
+      
       //get lateral color shift between border wavelengths wvn-1 and wvn+1
       latshift(wv[wvn-1], wv[wvn+1], NBR_STEPS, &scale_tmp, ray_angle[i]);
       //since number of steps is 2 then
       lat_shift_s[i] = Ya[1] - Ya[0];
+      
+      
+      //get distortion value for ray angle
+      
+      
       if (debug==1) print("psf:",psf_s[i],"mm  ls:", lat_shift_s[i],"mm");
-      psf_s2[i] = psf_s[i]*psf_s[i]+lat_shift_s[i]*lat_shift_s[i];
+      psf_s2[i] = psf_s[i]**2+lat_shift_s[i]**2;
   }
   
   if (debug==1) print("T");
@@ -123,11 +130,16 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
   }  
   double k = 0;
   double tmp_sum2=0;
+  double dist = 0;
+  double Distortion_scale = 1;
+  int nrays = 2;
   for(i=0;i<6;i++){
     k = cos(ray_angle[i]*FoV*Dr);
-    tmp_sum2 = psf_t2[i]*psf_t2[i]+psf_s2[i]*psf_s2[i]*(k*k*k*k);
+    distortion(1, &Distortion_scale, nrays, ray_angle[i]);
+    dist = Ya[1];
+    tmp_sum2 = psf_t2[i]**2+(psf_s2[i]*(k/(1+0.01*dist))**2)**2;
   }
-  if (v==1) print("The error is ",tmp_sum2);
+  if (debug==1) print("The error is ",tmp_sum2);
   return tmp_sum2/12;
 }
 
@@ -136,6 +148,10 @@ double co_mtf(int debug){
   double max_freq=400;
   double tmp_sum = 0;
 
+  double psf_conversion_coeff = 0.4412712;// =(2*ln2/pi)
+  double target_frequency = 227;
+  double target_sum = 0;
+  
   /*
   //!!!!WAVELENGTHS NEED TO BE PREDEFINED IN GUI!!!!
   wv[1] =0.588;//conventional green
@@ -162,9 +178,16 @@ double co_mtf(int debug){
   }
   tmp_sum = sqrt(sqrt(tmp_sum/4));
   
-  if (debug==1) print("FINAL PSF ERROR IS:",tmp_sum);
+  //target sum equals to target psf for all waves and angles
+  target_sum = psf_conversion_coeff/target_frequency;
   
-  return tmp_sum;
+  if (debug==1) {
+    print("Final psf error is:",tmp_sum);
+    print("Theoretical error at 227 lp/mm is:", target_sum);
+    print("Returned value",(tmp_sum-target_sum));
+  }
+  
+  return (tmp_sum-target_sum);
 }
 
 double co_ast_verticalizer(int debug,int number_of_points,int sag){
@@ -199,9 +222,9 @@ cmd set_elphel_operands(void){
     
   opnbr=0;
   operands(new);
-  opnbr++;o(opnbr,ins,"OCM0 ",100.0,"psfs");
-  opnbr++;o(opnbr,ins,"OCM1 ",100.0,"t ast vdep");
-  opnbr++;o(opnbr,ins,"OCM1 ",100.0,"s ast vdep");
+  opnbr++;o(opnbr,ins,"OCM0 ",1.0,"psfs");
+  opnbr++;o(opnbr,ins,"OCM1 ",0.0,"t ast vdep");
+  opnbr++;o(opnbr,ins,"OCM1 ",0.0,"s ast vdep");
   opnbr++;o(opnbr,ins,"OCM5 ",0.0,"PAC");//Primary axial color
   opnbr++;o(opnbr,ins,"OCM6 ",0.0,"PLC");//Primary lateral color
   opnbr++;o(opnbr,ins,"OCM7 ",0.0,"SAC");//Secondary axial color
@@ -218,13 +241,14 @@ cmd set_elphel_operands(void){
   opnbr++;o(opnbr,ins,"OCM18",0.0,"DIS5");//5th-order distortion
   opnbr++;o(opnbr,ins,"OCM19",0.0,"SA7");//7th-order spherical aberration
   opnbr++;o(opnbr,ins,"OCM20",0.0,"TOTAL_SPH");//Total spherical aberration
-  opnbr++;o(opnbr,ins,"OCM21", 1.0, "EFL");  /* Effective focal length */
+  opnbr++;o(opnbr,ins,"OCM21",0.0, "EFL");  /* Effective focal length */
   end();
 
   //redefine optimization function
   opoc update_operand;
   
   co_mtf(1);
+ 
   //tan
   //calculate_operand_ast_vertical_departure(1,20,0);
   //sag
@@ -232,6 +256,7 @@ cmd set_elphel_operands(void){
   
   printf("Program end\n");
   set_preference(output_text, on);
+    
 }
 
 cmd update_operand(){
@@ -259,9 +284,9 @@ cmd update_operand(){
 //   Ocm[18] = ssb(4, 5);//dis5
 //   Ocm[19] = ssb(4, 6);//sa7
 //   Ocm[20] = Ocm[9] + Ocm[14] + Ocm[19];//total spherical aberration
-  ssbuf_reset();
-  paraxial_constants();
-  Ocm[21] = ssb(5,1)-4.6;// focal length          ang. mag.
+  //ssbuf_reset();
+  //paraxial_constants();
+  //Ocm[21] = ssb(5,1)-4.6;// focal length          ang. mag.
   set_preference(output_text, on);
 }
 
