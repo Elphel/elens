@@ -1,7 +1,7 @@
 /*
 *! FILE NAME   : set elphel operands
 *! DESCRIPTION : sets user defined operands in OSLO
-*! REVISION    : 1.1
+*! REVISION    : 1.2
 *! AUTHOR      : Oleg Dzhimiev <oleg@elphel.com>
 *! Copyright (C) 2014 Elphel, Inc
 *! -----------------------------------------------------------------------------**
@@ -69,6 +69,13 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
   ray_angle[4]=0.7200;
   ray_angle[5]=0.8050;
   
+  double ray_angle_weight[6];
+  double ray_angle_weight_sum=0;
+  for(i=0;i<6;i++){
+    ray_angle_weight[i] = 1;//(1-ray_angle[i]);
+    ray_angle_weight_sum += ray_angle_weight[i];
+  }
+  
   //mod_trans_func
   //arg1: tfr = through frequency
   //arg2: chr = polychromatic, mon = monochrome
@@ -81,8 +88,8 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
   number_of_steps = floor(ccl_maximum_frequency/deltaf)+1;
   
   
-  //double scale_tmp=0;
-  double scale_tmp;
+  double scale_tmp=1;
+  //double scale_tmp;
   int NBR_STEPS=2;
   
   if (debug==1) print("S");
@@ -90,9 +97,7 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
       //set angle
       ssbuf_reset();
       trace_ref_ray(ray_angle[i]);
-      
-      //get mtf points
-      
+            
       //get psf width
       ssbuf_reset();
       mod_trans_func(tfr, mon, wvn, x, ccl_maximum_frequency, deltaf, 0.0);
@@ -102,11 +107,7 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
       //get lateral color shift between border wavelengths wvn-1 and wvn+1
       latshift(wv[wvn-1], wv[wvn+1], NBR_STEPS, &scale_tmp, ray_angle[i]);
       //since number of steps is 2 then
-      lat_shift_s[i] = Ya[1] - Ya[0];
-      
-      
-      //get distortion value for ray angle
-      
+      lat_shift_s[i] = Ya[1] - Ya[0];      
       
       if (debug==1) print("psf:",psf_s[i],"mm  ls:", lat_shift_s[i],"mm");
       psf_s2[i] = psf_s[i]**2+lat_shift_s[i]**2;
@@ -117,8 +118,6 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
       //set angle
       ssbuf_reset();
       trace_ref_ray(ray_angle[i]);
-      
-      //get mtf points
       
       //get psf width
       ssbuf_reset();
@@ -134,13 +133,16 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
   double Distortion_scale = 1;
   int nrays = 2;
   for(i=0;i<6;i++){
+    //cos
     k = cos(ray_angle[i]*FoV*Dr);
+    //distortion
     distortion(1, &Distortion_scale, nrays, ray_angle[i]);
     dist = Ya[1];
-    tmp_sum2 = psf_t2[i]**2+(psf_s2[i]*(k/(1+0.01*dist))**2)**2;
+    //sum
+    tmp_sum2 += (psf_t2[i]**2+(psf_s2[i]*(k/(1+0.01*dist))**2)**2)*(ray_angle_weight[i]/ray_angle_weight_sum/2);
   }
   if (debug==1) print("The error is ",tmp_sum2);
-  return tmp_sum2/12;
+  return tmp_sum2;
 }
 
 double co_mtf(int debug){
@@ -171,19 +173,26 @@ double co_mtf(int debug){
   wv[12]=0.655;//~0.7
   */
   
+  double color_weight[3];
+  color_weight[0]=0.30;//blue
+  color_weight[1]=1.00;//green
+  color_weight[2]=0.70;//red
+  double color_weight_sum = color_weight[0]+color_weight[1]+color_weight[2];
+  
   for (i=1;i<4;i++){
     if (debug==1) print("Wave",(2+3*i),wv[2+3*i]," um");
-    tmp_sum +=doit_mtfs((2+3*i),max_freq,debug);
+    tmp_sum += doit_mtfs((2+3*i),max_freq,debug)*color_weight[i-1]/color_weight_sum;
     if (debug==1) print("");
   }
-  tmp_sum = sqrt(sqrt(tmp_sum/4));
+  //tmp_sum = sqrt(sqrt(tmp_sum/3));
+  tmp_sum = sqrt(sqrt(tmp_sum));
   
   //target sum equals to target psf for all waves and angles
   target_sum = psf_conversion_coeff/target_frequency;
   
   if (debug==1) {
     print("Final psf error is:",tmp_sum);
-    print("Theoretical error at 227 lp/mm is:", target_sum);
+    print("Theoretical error at 227 lp/mm (Nyquist frequency for 2.2um pitch sensor) is:", target_sum);
     print("Returned value",(tmp_sum-target_sum));
   }
   
@@ -254,7 +263,7 @@ cmd set_elphel_operands(void){
   //sag
   //calculate_operand_ast_vertical_departure(1,20,1);
   
-  printf("Program end\n");
+  print("Program end");
   set_preference(output_text, on);
     
 }
