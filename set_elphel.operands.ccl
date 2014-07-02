@@ -1,0 +1,267 @@
+/*
+*! FILE NAME   : set elphel operands
+*! DESCRIPTION : sets user defined operands in OSLO
+*! REVISION    : 1.00
+*! AUTHOR      : Oleg Dzhimiev <oleg@elphel.com>
+*! Copyright (C) 2014 Elphel, Inc
+*! -----------------------------------------------------------------------------**
+*!  This program is free software: you can redistribute it and/or modify
+*!  it under the terms of the GNU General Public License as published by
+*!  the Free Software Foundation, either version 3 of the License, or
+*!  (at your option) any later version.
+*!
+*!  This program is distributed in the hope that it will be useful,
+*!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*!  GNU General Public License for more details.
+*!
+*!  The four essential freedoms with GNU GPL software:
+*!  * the freedom to run the program for any purpose
+*!  * the freedom to study how the program works and change it to make it do what you wish
+*!  * the freedom to redistribute copies so you can help your neighbor
+*!  * the freedom to distribute copies of your modified versions to others
+*!
+*!  You should have received a copy of the GNU General Public License
+*!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*! -----------------------------------------------------------------------------**
+*/
+
+#include "../../public/ccl/inc/gendefs.h"
+
+double find_mtf50_freq(double step, double N, double ref_mtf){
+  int i=0;
+  for (i=1;i<N;i++){
+    if (ssb(i,2)<ref_mtf){
+      return step*(ref_mtf-ssb(i-1,2))/(ssb(i,2)-ssb(i-1,2))+step*(i-2);
+    }
+  }
+  return step;
+}
+
+double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
+  int i = 0;
+  double deltaf=1;
+  int number_of_steps = 0;
+  
+  double mtf50_freq=0;
+  double ref_mtf = 0.5;
+  
+  double psf50=0;
+  double psf_conversion_coeff = 0.4412712;// =(2*ln2/pi)
+   
+  double mtf50_freq_sag[6];
+  double mtf50_freq_tan[6];
+  
+  double psf_s[6];
+  double psf_t[6];
+  double lat_shift_s[6];
+  double psf_s2[6];
+  double psf_t2[6];
+  
+  double FoV = 38;//degrees
+    
+  //NOT DEGREES OR RADIANS
+  double ray_angle[6];
+  ray_angle[0]=0.0000;
+  ray_angle[1]=0.3600;
+  ray_angle[2]=0.5091;
+  ray_angle[3]=0.6235;
+  ray_angle[4]=0.7200;
+  ray_angle[5]=0.8050;
+  
+  //mod_trans_func
+  //arg1: tfr = through frequency
+  //arg2: chr = polychromatic, mon = monochrome
+  //arg2.5(if mon): 1,2,3,... - for main wavelengths
+  //arg3: max reported frequency
+  //arg4: some deltaf = frequency step - defines number of points
+  //arg5: focus position
+  //mod_trans_func(tfr, chr, y, ccl_maximum_frequency, deltaf, 0.0);
+
+  number_of_steps = floor(ccl_maximum_frequency/deltaf)+1;
+  
+  
+  double scale_tmp=0;
+  int NBR_STEPS=2;
+  
+  if (debug==1) print("S");
+  for(i=0;i<6;i++){
+      //set angle
+      ssbuf_reset();
+      trace_ref_ray(ray_angle[i]);
+      
+      //get mtf points
+      
+      //get psf width
+      ssbuf_reset();
+      mod_trans_func(tfr, mon, wvn, x, ccl_maximum_frequency, deltaf, 0.0);
+      mtf50_freq = find_mtf50_freq(deltaf,number_of_steps,ref_mtf);
+      psf_s[i] = psf_conversion_coeff/mtf50_freq;//got psf50 in mm's
+      //get lateral color shift between border wavelengths wvn-1 and wvn+1
+      latshift(wv[wvn-1], wv[wvn+1], NBR_STEPS, &scale_tmp, ray_angle[i]);
+      //since number of steps is 2 then
+      lat_shift_s[i] = Ya[1] - Ya[0];
+      if (debug==1) print("psf:",psf_s[i],"mm  ls:", lat_shift_s[i],"mm");
+      psf_s2[i] = psf_s[i]*psf_s[i]+lat_shift_s[i]*lat_shift_s[i];
+  }
+  
+  if (debug==1) print("T");
+  for(i=0;i<6;i++){
+      //set angle
+      ssbuf_reset();
+      trace_ref_ray(ray_angle[i]);
+      
+      //get mtf points
+      
+      //get psf width
+      ssbuf_reset();
+      mod_trans_func(tfr, mon, wvn, y, ccl_maximum_frequency, deltaf, 0.0);
+      mtf50_freq = find_mtf50_freq(deltaf,number_of_steps,ref_mtf);
+      psf_t[i] = psf_conversion_coeff/mtf50_freq;//got psf50 in mm's
+      if (debug==1) print("psf:",psf_t[i],"mm");
+      psf_t2[i] = psf_t[i];
+  }  
+  double k = 0;
+  double tmp_sum2=0;
+  for(i=0;i<6;i++){
+    k = cos(ray_angle[i]*FoV*Dr);
+    tmp_sum2 = psf_t2[i]*psf_t2[i]+psf_s2[i]*psf_s2[i]*(k*k*k*k);
+  }
+  if (v==1) print("The error is ",tmp_sum2);
+  return tmp_sum2/12;
+}
+
+double co_mtf(int debug){
+  int i=0;
+  double max_freq=400;
+  double tmp_sum = 0;
+
+  /*
+  //!!!!WAVELENGTHS NEED TO BE PREDEFINED IN GUI!!!!
+  wv[1] =0.588;//conventional green
+  wv[2] =0.486;//conventional blue
+  wv[3] =0.656;//conventional red  
+  //sensor's blue
+  wv[4] =0.420;//~0.7
+  wv[5] =0.450;//~max
+  wv[6] =0.480;//~0.7
+  //sensor's green
+  wv[7] =0.510;//~0.7
+  wv[8] =0.530;//~max
+  wv[9] =0.560;//~0.7
+  //sensor's red
+  wv[10] =0.585;//~0.7
+  wv[11]=0.600;//~max
+  wv[12]=0.655;//~0.7
+  */
+  
+  for (i=1;i<4;i++){
+    if (debug==1) print("Wave",(2+3*i),wv[2+3*i]," um");
+    tmp_sum +=doit_mtfs((2+3*i),max_freq,debug);
+    if (debug==1) print("");
+  }
+  tmp_sum = sqrt(sqrt(tmp_sum/4));
+  
+  if (debug==1) print("FINAL PSF ERROR IS:",tmp_sum);
+  
+  return tmp_sum;
+}
+
+double co_ast_verticalizer(int debug,int number_of_points,int sag){
+
+  double tmp_sum = 0;
+  double departure = 0;
+  int tan_or_sag = 3+sag;
+    
+  ssbuf_reset();
+  field n number_of_points 0.8;
+   
+  for(i=1;i<=number_of_points;i++){
+     departure = (ssb(i,tan_or_sag)-ssb(1,tan_or_sag))*ssb(i,1)*ssb(i,1);
+     tmp_sum += departure*departure*departure*departure;
+  }
+  
+  tmp_sum = sqrt(sqrt(tmp_sum))/number_of_points;
+    
+  if (debug==1) print("FINAL AST ERROR IS:",tmp_sum);
+    
+  return tmp_sum;
+}
+
+cmd set_elphel_operands(void){
+  static int opnbr;  
+  printf("Program start\n");
+  
+  //disable output from various functions calling
+  set_preference(output_text, off);
+  //This variant works as well
+  //Set_preference("output_text","off");
+    
+  opnbr=0;
+  operands(new);
+  opnbr++;o(opnbr,ins,"OCM0 ",100.0,"psfs");
+  opnbr++;o(opnbr,ins,"OCM1 ",100.0,"t ast vdep");
+  opnbr++;o(opnbr,ins,"OCM1 ",100.0,"s ast vdep");
+  opnbr++;o(opnbr,ins,"OCM5 ",0.0,"PAC");//Primary axial color
+  opnbr++;o(opnbr,ins,"OCM6 ",0.0,"PLC");//Primary lateral color
+  opnbr++;o(opnbr,ins,"OCM7 ",0.0,"SAC");//Secondary axial color
+  opnbr++;o(opnbr,ins,"OCM8 ",0.0,"SLC");//Secondary lateral color
+  opnbr++;o(opnbr,ins,"OCM9 ",0.0,"SA3");//3rd-order spherical
+  opnbr++;o(opnbr,ins,"OCM10",0.0,"CMA3");//3rd-order coma
+  opnbr++;o(opnbr,ins,"OCM11",0.0,"AST3");//3rd-order astigmatism
+  opnbr++;o(opnbr,ins,"OCM12",0.0,"PTZ3");//3rd-order Petzval sum
+  opnbr++;o(opnbr,ins,"OCM13",0.0,"DIS3");//3rd-order distortion
+  opnbr++;o(opnbr,ins,"OCM14",0.0,"SA5");//5th-order spherical aberration
+  opnbr++;o(opnbr,ins,"OCM15",0.0,"CMA5");//5th-order linear coma
+  opnbr++;o(opnbr,ins,"OCM16",0.0,"AST5");//5th-order astigmatism
+  opnbr++;o(opnbr,ins,"OCM17",0.0,"PTZ5");//5th-order Petzval sum
+  opnbr++;o(opnbr,ins,"OCM18",0.0,"DIS5");//5th-order distortion
+  opnbr++;o(opnbr,ins,"OCM19",0.0,"SA7");//7th-order spherical aberration
+  opnbr++;o(opnbr,ins,"OCM20",0.0,"TOTAL_SPH");//Total spherical aberration
+  opnbr++;o(opnbr,ins,"OCM21", 1.0, "EFL");  /* Effective focal length */
+  end();
+
+  //redefine optimization function
+  opoc update_operand;
+  
+  co_mtf(1);
+  //tan
+  //calculate_operand_ast_vertical_departure(1,20,0);
+  //sag
+  //calculate_operand_ast_vertical_departure(1,20,1);
+  
+  printf("Program end\n");
+  set_preference(output_text, on);
+}
+
+cmd update_operand(){
+  set_preference(output_text, off);
+  ssbuf_reset();
+  Ocm[0] = co_mtf(0);
+  Ocm[1] = co_ast_verticalizer(0,20,0);
+  Ocm[2] = co_ast_verticalizer(0,20,1);
+//   chromatic_abers();
+//   Ocm[5] = ssb(2, 1);//pac
+//   Ocm[6] = ssb(2, 3);//plc
+//   Ocm[7] = ssb(2, 2);//sac
+//   Ocm[8] = ssb(2, 4);//slc
+//   seidel_abers();
+//   Ocm[9] = ssb(3, 1);//sa3
+//   Ocm[10] = ssb(3, 2);//cma3
+//   Ocm[11] = ssb(3, 3);//ast3
+//   Ocm[12] = ssb(3, 4);//ptz3
+//   Ocm[13] = ssb(3, 5);//dis3
+//   fifth_order_abers();
+//   Ocm[14] = ssb(4, 1);//sa5
+//   Ocm[15] = ssb(4, 2);//cma5
+//   Ocm[16] = ssb(4, 3);//ast5
+//   Ocm[17] = ssb(4, 4);//ptz5
+//   Ocm[18] = ssb(4, 5);//dis5
+//   Ocm[19] = ssb(4, 6);//sa7
+//   Ocm[20] = Ocm[9] + Ocm[14] + Ocm[19];//total spherical aberration
+  ssbuf_reset();
+  paraxial_constants();
+  Ocm[21] = ssb(5,1)-4.6;// focal length          ang. mag.
+  set_preference(output_text, on);
+}
+
