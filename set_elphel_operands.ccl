@@ -139,7 +139,7 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
     distortion(1, &Distortion_scale, nrays, ray_angle[i]);
     dist = Ya[1];
     //sum
-    tmp_sum2 += (psf_t2[i]**2+(psf_s2[i]*(k/(1+0.01*dist))**2)**2)*(ray_angle_weight[i]/ray_angle_weight_sum/2);
+    tmp_sum2 += (psf_t2[i]**2+(psf_s2[i]*(k/(1+0.01*dist))**2)**2)*(ray_angle_weight[i]/(2*ray_angle_weight_sum));
   }
   if (debug==1) print("The error is ",tmp_sum2);
   return tmp_sum2;
@@ -151,7 +151,8 @@ double co_mtf(int debug){
   double tmp_sum = 0;
 
   double psf_conversion_coeff = 0.4412712;// =(2*ln2/pi)
-  double target_frequency = 227;
+  double sensor_pitch = 2.2*0.001;
+  double target_frequency = psf_conversion_coeff/sensor_pitch;
   double target_sum = 0;
   
   /*
@@ -177,6 +178,9 @@ double co_mtf(int debug){
   color_weight[0]=0.30;//blue
   color_weight[1]=1.00;//green
   color_weight[2]=0.70;//red
+  //color_weight[0]=1;//blue
+  //color_weight[1]=1;//green
+  //color_weight[2]=1;//red
   double color_weight_sum = color_weight[0]+color_weight[1]+color_weight[2];
   
   for (i=1;i<4;i++){
@@ -192,7 +196,7 @@ double co_mtf(int debug){
   
   if (debug==1) {
     print("Final psf error is:",tmp_sum);
-    print("Theoretical error at 227 lp/mm (Nyquist frequency for 2.2um pitch sensor) is:", target_sum);
+    print("Theoretical error at",target_frequency,"lp/mm (Nyquist frequency for 2.2um pitch sensor) is:", target_sum);
     print("Returned value",(tmp_sum-target_sum));
   }
   
@@ -293,9 +297,9 @@ cmd update_operand(){
 //   Ocm[18] = ssb(4, 5);//dis5
 //   Ocm[19] = ssb(4, 6);//sa7
 //   Ocm[20] = Ocm[9] + Ocm[14] + Ocm[19];//total spherical aberration
-  //ssbuf_reset();
-  //paraxial_constants();
-  //Ocm[21] = ssb(5,1)-4.6;// focal length          ang. mag.
+  ssbuf_reset();
+  paraxial_constants();
+  Ocm[21] = ssb(5,1);// focal length          ang. mag.
   set_preference(output_text, on);
 }
 
