@@ -125,7 +125,7 @@ double doit_mtfs(int wvn,double ccl_maximum_frequency,int debug){
       mtf50_freq = find_mtf50_freq(deltaf,number_of_steps,ref_mtf);
       psf_t[i] = psf_conversion_coeff/mtf50_freq;//got psf50 in mm's
       if (debug==1) print("psf:",psf_t[i],"mm");
-      psf_t2[i] = psf_t[i];
+      psf_t2[i] = psf_t[i]**2;
   }  
   double k = 0;
   double tmp_sum2=0;
@@ -175,7 +175,7 @@ double co_mtf(int debug){
   */
   
   double color_weight[3];
-  color_weight[0]=0.30;//blue
+  color_weight[0]=0.35;//blue
   color_weight[1]=1.00;//green
   color_weight[2]=0.70;//red
   //color_weight[0]=1;//blue
@@ -213,8 +213,8 @@ double co_ast_verticalizer(int debug,int number_of_points,int sag){
   field n number_of_points 0.8;
    
   for(i=1;i<=number_of_points;i++){
-     departure = (ssb(i,tan_or_sag)-ssb(1,tan_or_sag))*ssb(i,1)*ssb(i,1);
-     tmp_sum += departure*departure*departure*departure;
+     departure = (ssb(i,tan_or_sag)-ssb(1,tan_or_sag))*ssb(i,1)**2;
+     tmp_sum += departure**4;
   }
   
   tmp_sum = sqrt(sqrt(tmp_sum))/number_of_points;
@@ -276,8 +276,8 @@ cmd update_operand(){
   set_preference(output_text, off);
   ssbuf_reset();
   Ocm[0] = co_mtf(0);
-  Ocm[1] = co_ast_verticalizer(0,20,0);
-  Ocm[2] = co_ast_verticalizer(0,20,1);
+  //Ocm[1] = co_ast_verticalizer(0,20,0);
+  //Ocm[2] = co_ast_verticalizer(0,20,1);
 //   chromatic_abers();
 //   Ocm[5] = ssb(2, 1);//pac
 //   Ocm[6] = ssb(2, 3);//plc
